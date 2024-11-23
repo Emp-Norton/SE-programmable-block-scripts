@@ -12,6 +12,10 @@ double Kd = 0.05;
 Vector3D previousError = Vector3D.Zero;
 Vector3D integral = Vector3D.Zero;
 
+// Tolerance for altitude and position
+double altitudeTolerance = 5.0;
+double positionTolerance = 10.0;
+
 public Program()
 {
     Runtime.UpdateFrequency = UpdateFrequency.Update1; // Run script every tick
@@ -74,7 +78,7 @@ public void Main(string argument, UpdateType updateSource)
     }
 
     // Get the current position of the grid from a ship controller
-    IMyShipController controller = GridTerminalSystem.GetBlockWithName("Missile Remote Control") as IMyShipController;
+    IMyShipController controller = GridTerminalSystem.GetBlockWithName("Remote Control") as IMyShipController;
     if (controller == null)
     {
         Echo("No cockpit or remote control block found!");
@@ -94,14 +98,42 @@ public void Main(string argument, UpdateType updateSource)
         Echo("No planet detected, flying in space.");
         currentAltitude = double.MaxValue; // Set to a high value in space
     }
-    Echo($"Current Alt: {currentAltitude}");
-    // Adjust the target position to maintain the desired altitude
-    double altitudeDifference = targetAltitude - currentAltitude;
-    Vector3D adjustedTarget = targetPosition;
-    adjustedTarget.Y += altitudeDifference; // Adjust the Y-axis for altitude control
+
+    // Check if altitude is within tolerance
+    bool altitudeReached = Math.Abs(targetAltitude - currentAltitude) <= altitudeTolerance;
+
+    if (!altitudeReached)
+    {
+        // Adjust the target position to maintain the desired altitude
+        double altitudeDifference = targetAltitude - currentAltitude;
+        Vector3D altitudeCorrection = Vector3D.Up * altitudeDifference;
+
+        // Apply altitude correction thrust
+        ApplyThrust(altitudeCorrection - gravity);
+        Echo($"Adjusting altitude: {currentAltitude} -> {targetAltitude}");
+        return; // Exit to wait for altitude adjustment
+    }
+
+    // Altitude reached, now move toward target
+    Echo($"Reached altitude.");
+    Vector3D error = targetPosition - currentPosition;
+
+    // Check if position is within tolerance
+    if (error.Length() <= positionTolerance)
+    {
+        // Stop all thrusters
+        List<IMyThrust> thrusters = new List<IMyThrust>();
+        GridTerminalSystem.GetBlocksOfType(thrusters);
+        foreach (var thruster in thrusters)
+        {
+            thruster.ThrustOverride = 0;
+        }
+
+        Echo("Target reached!");
+        return;
+    }
 
     // Calculate PID error
-    Vector3D error = adjustedTarget - currentPosition;
     Vector3D derivative = error - previousError;
     Vector3D proportional = error * Kp;
     integral += error * Ki;
@@ -128,10 +160,8 @@ public void Main(string argument, UpdateType updateSource)
 
     // Debugging information
     Echo($"Target: {targetPosition}");
-    Echo($"Adjusted Target: {adjustedTarget}");
     Echo($"Current Position: {currentPosition}");
     Echo($"Current Altitude: {currentAltitude}");
-    Echo($"Gravity: {gravity}");
     Echo($"Error: {error}");
     Echo($"Compensated Thrust: {compensatedThrust}");
 }
