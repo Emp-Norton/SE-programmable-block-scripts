@@ -19,6 +19,7 @@ double positionTolerance = 10.0;
 public Program()
 {
     Runtime.UpdateFrequency = UpdateFrequency.Update1; // Run script every tick
+   
 }
 
 public bool SetTargetFromGPS(string gpsString)
@@ -61,6 +62,35 @@ public void ApplyThrust(Vector3D thrustVector)
     }
 }
 
+public void CheckAltitudeDelta()
+{
+    // Determine current altitude
+    double currentAltitude = 0;
+    if (!controller.TryGetPlanetElevation(MyPlanetElevation.Surface, out currentAltitude))
+    {
+        Echo("No planet detected, flying in space.");
+        currentAltitude = double.MaxValue; // Set to a high value in space
+    }
+
+    // Check if altitude is within tolerance
+    bool altitudeReached = Math.Abs(targetAltitude - currentAltitude) <= altitudeTolerance;
+
+    if (!altitudeReached)
+    {
+        // Adjust the target position to maintain the desired altitude
+        double altitudeDifference = targetAltitude - currentAltitude;
+        Vector3D altitudeCorrection = Vector3D.Up * altitudeDifference;
+
+        // Apply altitude correction thrust
+        ApplyThrust(altitudeCorrection - gravity);
+        Echo($"Adjusting altitude: {currentAltitude} -> {targetAltitude}");
+        return; // Exit to wait for altitude adjustment
+    }
+
+    // Altitude reached, now move toward target
+    Echo($"Reached altitude.");
+}
+
 public void Main(string argument, UpdateType updateSource)
 {
     // If GPS argument is passed, update target position
@@ -91,31 +121,7 @@ public void Main(string argument, UpdateType updateSource)
     // Gravity compensation
     Vector3D gravity = controller.GetNaturalGravity();
 
-    // Determine current altitude
-    double currentAltitude = 0;
-    if (!controller.TryGetPlanetElevation(MyPlanetElevation.Surface, out currentAltitude))
-    {
-        Echo("No planet detected, flying in space.");
-        currentAltitude = double.MaxValue; // Set to a high value in space
-    }
 
-    // Check if altitude is within tolerance
-    bool altitudeReached = Math.Abs(targetAltitude - currentAltitude) <= altitudeTolerance;
-
-    if (!altitudeReached)
-    {
-        // Adjust the target position to maintain the desired altitude
-        double altitudeDifference = targetAltitude - currentAltitude;
-        Vector3D altitudeCorrection = Vector3D.Up * altitudeDifference;
-
-        // Apply altitude correction thrust
-        ApplyThrust(altitudeCorrection - gravity);
-        Echo($"Adjusting altitude: {currentAltitude} -> {targetAltitude}");
-        return; // Exit to wait for altitude adjustment
-    }
-
-    // Altitude reached, now move toward target
-    Echo($"Reached altitude.");
     Vector3D error = targetPosition - currentPosition;
 
     // Check if position is within tolerance
@@ -126,9 +132,10 @@ public void Main(string argument, UpdateType updateSource)
         GridTerminalSystem.GetBlocksOfType(thrusters);
         foreach (var thruster in thrusters)
         {
+	    # TODO: This is flat wrong. Maybe fine for driving, but not flying. Set to hover instead, should be a func within the SE PB API
             thruster.ThrustOverride = 0;
         }
-
+	
         Echo("Target reached!");
         return;
     }
