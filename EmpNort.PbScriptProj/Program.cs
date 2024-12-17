@@ -70,6 +70,18 @@ namespace IngameScript
             // 
             // The method itself is required, but the arguments above
             // can be removed if not needed.
+            var batteries = new List<IMyBatteryBlock>();
+            GridTerminalSystem.GetBlocksOfType(batteries);
+
+            var panels = new List<IMyTextPanel>();
+            GridTerminalSystem.GetBlocksOfType(panels);
+
+            if (panels.Count > 0)
+            {
+                var batteryStatusDisplayScreen = new BatteryStatusDisplay(panels[0]);
+                batteryStatusDisplayScreen.DisplayBatteryStatusInfo(batteries);
+
+            }
         }
         /*
         public GetCockpitPanels(IMyCockpit cockpit)
@@ -104,7 +116,7 @@ namespace IngameScript
                 }
 
                 screen.WriteText(ScreenOutput.ToString(), false);
-                    
+
             }
 
         }
