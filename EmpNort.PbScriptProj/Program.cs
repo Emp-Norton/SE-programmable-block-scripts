@@ -90,7 +90,21 @@ namespace IngameScript
 
             public void DisplayBatteryStatusInfo(List<IMyBatteryBlock> batteries)
             {
+                var ScreenOutput = new StringBuilder();
+                ScreenOutput.AppendLine("{_=_Battery Stats_=_}");
+                foreach (var battery in batteries)
+                {
+                    string name = battery.CustomName;
+                    float charge = battery.CurrentStoredPower;
+                    float maxCharge = battery.MaxStoredPower;
+                    float chargePerc = (maxCharge > 0) ? (charge / maxCharge) * 100f : 0f;
+                    float rat = battery.CurrentOutputRatio;
 
+                    ScreenOutput.AppendLine($"{name} :: {charge:F2} / {maxCharge:F2} MWh :: {chargePerc:F0}% :: {rat}");
+                }
+
+                screen.WriteText(ScreenOutput.ToString(), false);
+                    
             }
 
         }
