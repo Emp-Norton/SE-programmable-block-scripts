@@ -58,9 +58,6 @@ namespace IngameScript
 
         public void Main(string argument, UpdateType updateSource)
         {
-            IMyCockpit cockpit;
-            cockpit = GridTerminalSystem.GetBlockWithName("Cockpit") as IMyCockpit;
-
             // The main entry point of the script, invoked every time
             // one of the programmable block's Run actions are invoked,
             // or the script updates itself. The updateSource argument
@@ -70,25 +67,38 @@ namespace IngameScript
             // 
             // The method itself is required, but the arguments above
             // can be removed if not needed.
+
+            IMyCockpit cockpit;
+            cockpit = GridTerminalSystem.GetBlockWithName("Scooty-puff Jr.") as IMyCockpit;
+
             var batteries = new List<IMyBatteryBlock>();
             GridTerminalSystem.GetBlocksOfType(batteries);
 
-            var panels = new List<IMyTextPanel>();
-            GridTerminalSystem.GetBlocksOfType(panels);
-
-            if (panels.Count > 0)
+            if (cockpit != null) // TODO: add OR condition checking PB input arguments for panel preference.
             {
-                var batteryStatusDisplayScreen = new BatteryStatusDisplay(panels[0]);
-                batteryStatusDisplayScreen.DisplayBatteryStatusInfo(batteries);
+                for (var i = 0; i < cockpit.SurfaceCount; i++)
+                {
+                    IMyTextSurface surface = cockpit.GetSurface(i);
+                    surface.WriteText($"Surface #{i}");
+                }
+            }
+            else
+            {
+                Echo("No cockpit available.");
 
+                var panels = new List<IMyTextPanel>();
+                GridTerminalSystem.GetBlocksOfType(panels);
+
+                if (panels.Count > 0)
+                {
+                    var batteryStatusDisplayScreen = new BatteryStatusDisplay(panels[0]);
+                    batteryStatusDisplayScreen.DisplayBatteryStatusInfo(batteries);
+
+                }
             }
         }
-        /*
-        public GetCockpitPanels(IMyCockpit cockpit)
-        {
 
-        }
-        */
+
         public class BatteryStatusDisplay
         {
             private IMyTextPanel screen;
