@@ -93,34 +93,26 @@ namespace IngameScript
 
         }
 
-        public class BatteryStatusDisplay
+ 
+
+        public void BatteryStatusDisplay(IMyTextPanel screen, List<IMyBatteryBlock> batteries)
         {
-            private IMyTextPanel screen;
-
-            public BatteryStatusDisplay(IMyTextPanel panel)
+            screen.ContentType = ContentType.TEXT_AND_IMAGE;
+            screen.WriteText("Polling batteries for charge metrics...\n", false);
+            
+            var ScreenOutput = new StringBuilder();
+            ScreenOutput.AppendLine("{_=_Battery Stats_=_}");
+            foreach (var battery in batteries)
             {
-                screen = panel;
-                screen.ContentType = ContentType.TEXT_AND_IMAGE;
-                screen.WriteText("Polling batteries for charge metrics...\n", false);
+                string name = battery.CustomName;
+                float charge = battery.CurrentStoredPower;
+                float maxCharge = battery.MaxStoredPower;
+                float chargePerc = (maxCharge > 0) ? (charge / maxCharge) * 100f : 0f;
+
+                ScreenOutput.AppendLine($"{name} :: {charge:F2} / {maxCharge:F2} MWh :: {chargePerc:F0}%");
             }
 
-            public void DisplayBatteryStatusInfo(List<IMyBatteryBlock> batteries)
-            {
-                var ScreenOutput = new StringBuilder();
-                ScreenOutput.AppendLine("{_=_Battery Stats_=_}");
-                foreach (var battery in batteries)
-                {
-                    string name = battery.CustomName;
-                    float charge = battery.CurrentStoredPower;
-                    float maxCharge = battery.MaxStoredPower;
-                    float chargePerc = (maxCharge > 0) ? (charge / maxCharge) * 100f : 0f;
-
-                    ScreenOutput.AppendLine($"{name} :: {charge:F2} / {maxCharge:F2} MWh :: {chargePerc:F0}%");
-                }
-
-                screen.WriteText(ScreenOutput.ToString(), false);
-
-            }
+            screen.WriteText(ScreenOutput.ToString(), false);
 
         }
 
