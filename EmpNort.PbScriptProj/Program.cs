@@ -27,6 +27,7 @@ namespace IngameScript
         // You can either keep all your code here, or you can create separate
         // code files to make your program easier to navigate while coding.
         //
+
         // Go to:
         // https://github.com/malware-dev/MDK-SE/wiki/Quick-Introduction-to-Space-Engineers-Ingame-Scripts
         //
@@ -65,8 +66,11 @@ namespace IngameScript
             // updateSource is a  bitfield  and might contain more than 
             // one update type.
             // 
-            // The method itself is required, but the arguments above
+            // The method itself is required, but the arguments abovewd
             // can be removed if not needed.
+
+            UtilityClass DisplayUtilityClass = new UtilityClass();
+            DisplayUtilityClass.ShowHydrogen();
 
             IMyCockpit cockpit;
             cockpit = GridTerminalSystem.GetBlockWithName("Scooty-puff Jr.") as IMyCockpit;
@@ -97,6 +101,8 @@ namespace IngameScript
                 }
             }
         }
+
+       
 
 
         public class BatteryStatusDisplay
