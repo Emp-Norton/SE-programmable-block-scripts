@@ -69,25 +69,38 @@ namespace IngameScript
             // The method itself is required, but the arguments abovewd
             // can be removed if not needed.
 
-            UtilityClass DisplayUtilityClass = new UtilityClass();
+            string HydrogenLcdPanelName;
+            string BatteryLcdPanelName;
+
+            string[] argParts = argument.Split(',');
+            foreach (var name in argParts)
+            {
+                switch (name) 
+                {
+                    case "hydrogenLcd": { HydrogenLcdPanelName = name; } break;
+                    case "batteryLcd": { BatteryLcdPanelName = name; } break;
+                }
+                
+            }
+
+
+            StatusDisplayUtilityClass DisplayUtilityClass = new StatusDisplayUtilityClass();
             DisplayUtilityClass.ShowHydrogen();
 
-            IMyCockpit cockpit;
-            cockpit = GridTerminalSystem.GetBlockWithName("Scooty-puff Jr.") as IMyCockpit;
 
             var batteries = new List<IMyBatteryBlock>();
             GridTerminalSystem.GetBlocksOfType(batteries);
 
-            if (cockpit != null) // TODO: add OR condition checking PB input arguments for panel preference.
-            {
-                for (var i = 0; i < cockpit.SurfaceCount; i++)
-                {
-                    IMyTextSurface surface = cockpit.GetSurface(i);
-                    surface.WriteText($"Surface #{i}");
-                }
-            }
-            else
-            {
+            //if (cockpit != null) // TODO: add OR condition checking PB input arguments for panel preference.
+            //{
+            //    for (var i = 0; i < cockpit.SurfaceCount; i++)
+            //    {
+            //        IMyTextSurface surface = cockpit.GetSurface(i);
+            //        surface.WriteText($"Surface #{i}");
+            //    }
+            //}
+            //else
+            //{
                 Echo("No cockpit available.");
 
                 var panels = new List<IMyTextPanel>();
@@ -99,42 +112,12 @@ namespace IngameScript
                     batteryStatusDisplayScreen.DisplayBatteryStatusInfo(batteries);
 
                 }
-            }
+            //}
         }
 
        
 
 
-        public class BatteryStatusDisplay
-        {
-            private IMyTextPanel screen;
-
-            public BatteryStatusDisplay(IMyTextPanel panel)
-            {
-                screen = panel;
-                screen.ContentType = ContentType.TEXT_AND_IMAGE;
-                screen.WriteText("Polling batteries for charge metrics...\n", false);
-            }
-
-            public void DisplayBatteryStatusInfo(List<IMyBatteryBlock> batteries)
-            {
-                var ScreenOutput = new StringBuilder();
-                ScreenOutput.AppendLine("{_=_Battery Stats_=_}");
-                foreach (var battery in batteries)
-                {
-                    string name = battery.CustomName;
-                    float charge = battery.CurrentStoredPower;
-                    float maxCharge = battery.MaxStoredPower;
-                    float chargePerc = (maxCharge > 0) ? (charge / maxCharge) * 100f : 0f;
-                    float rat = battery.CurrentOutputRatio;
-
-                    ScreenOutput.AppendLine($"{name} :: {charge:F2} / {maxCharge:F2} MWh :: {chargePerc:F0}% :: {rat}");
-                }
-
-                screen.WriteText(ScreenOutput.ToString(), false);
-
-            }
-
-        }
+       
     }
 }
