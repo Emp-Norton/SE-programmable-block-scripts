@@ -20,97 +20,53 @@ using VRageMath;
 
 namespace IngameScript
 {
-    partial class Program : MyGridProgram
+    public class Program : MyGridProgram
     {
-        // This file contains your actual script.
-        //
-        // You can either keep all your code here, or you can create separate
-        // code files to make your program easier to navigate while coding.
-        //
-
-        // Go to:
-        // https://github.com/malware-dev/MDK-SE/wiki/Quick-Introduction-to-Space-Engineers-Ingame-Scripts
-        //
-        // to learn more about ingame scripts.
+        private readonly StatusDisplayUtility _utility;
 
         public Program()
         {
-            // The constructor, called only once every session and
-            // always before any other method is called. Use it to
-            // initialize your script. 
-            //     
-            // The constructor is optional and can be removed if not
-            // needed.
-            // 
-            // It's recommended to set Runtime.UpdateFrequency 
-            // here, which will allow your script to run itself without a 
-            // timer block.
+            // Pass the current instance to the utility
+            _utility = new StatusDisplayUtility(this);
         }
 
         public void Save()
         {
-            // Called when the program needs to save its state. Use
-            // this method to save your state to the Storage field
-            // or some other means. 
-            // 
-            // This method is optional and can be removed if not
-            // needed.
+            // Optional save logic
         }
 
         public void Main(string argument, UpdateType updateSource)
         {
-            // The main entry point of the script, invoked every time
-            // one of the programmable block's Run actions are invoked,
-            // or the script updates itself. The updateSource argument
-            // describes where the update came from. Be aware that the
-            // updateSource is a  bitfield  and might contain more than 
-            // one update type.
-            // 
-            // The method itself is required, but the arguments abovewd
-            // can be removed if not needed.
-
-            string HydrogenLcdPanelName = null;
-            string BatteryLcdPanelName = null;
-
-            string[] argParts = argument.Split(',');
-            foreach (var name in argParts)
-            {
-                switch (name) 
-                {
-                    case "hydrogenLcd": { HydrogenLcdPanelName = name; } break;
-                    case "batteryLcd": { BatteryLcdPanelName = name; } break;
-                }
-                
-            }
-
             var batteries = new List<IMyBatteryBlock>();
             GridTerminalSystem.GetBlocksOfType(batteries);
-            IMyTextPanel batteryPanel = GridTerminalSystem.GetBlockWithName(BatteryLcdPanelName) as IMyTextPanel;
+            IMyTextPanel batteryPanel = GridTerminalSystem.GetBlockWithName("batteryLcd") as IMyTextPanel;
 
+            List<IMyGasTank> tanks = new List<IMyGasTank>();
+            GridTerminalSystem.GetBlocksOfType(tanks, tank => tank.BlockDefinition.SubtypeName.Contains("HydrogenTank"));
 
-            StatusDisplayUtilityClass DisplayUtilityClass = new StatusDisplayUtilityClass();
-            
-            if (HydrogenLcdPanelName != null) 
+            IMyTextPanel hydroPanel = GridTerminalSystem.GetBlockWithName("hydroLcd") as IMyTextPanel;
+
+            List<IMyTerminalBlock> inventories = new List<IMyTerminalBlock>();
+            GridTerminalSystem.GetBlocksOfType<IMyTerminalBlock>(inventories, block => block.HasInventory);
+
+            if (hydroPanel != null && tanks.Count > 0 && inventories.Count > 0)
             {
-                DisplayUtilityClass.ShowHydrogen(HydrogenLcdPanelName);
-            } else 
+                _utility.ShowHydrogen(hydroPanel, tanks, inventories);
+            }
+            else
             {
-                Echo($"Unable to locate suitably named Hydrogen LCD: {HydrogenLcdPanelName}");
+                Echo($"Unable to locate Hydrogen LCD or required components.");
             }
 
-            if (batteryPanel != null) 
+            if (batteryPanel != null && batteries.Count > 0)
             {
-                if (batteries.Count > 0) 
-                {
-                    DisplayUtilityClass.BatteryStatusDisplay(batteryPanel, batteries);
-                } else
-                {
-                    Echo($"No batteries available for display: {batteries}");
-                }
-            } else 
-            {
-                Echo($"No such battery panel: {batteryPanel}");
+                _utility.BatteryStatusDisplay(batteryPanel, batteries);
             }
-        }     
+            else
+            {
+                Echo($"No batteries or battery panel available.");
+            }
+        }
     }
+
 }
