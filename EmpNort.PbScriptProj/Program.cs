@@ -69,8 +69,8 @@ namespace IngameScript
             // The method itself is required, but the arguments abovewd
             // can be removed if not needed.
 
-            string HydrogenLcdPanelName;
-            string BatteryLcdPanelName;
+            string HydrogenLcdPanelName = null;
+            string BatteryLcdPanelName = null;
 
             string[] argParts = argument.Split(',');
             foreach (var name in argParts)
@@ -83,41 +83,34 @@ namespace IngameScript
                 
             }
 
-
-            StatusDisplayUtilityClass DisplayUtilityClass = new StatusDisplayUtilityClass();
-            DisplayUtilityClass.ShowHydrogen();
-
-
             var batteries = new List<IMyBatteryBlock>();
             GridTerminalSystem.GetBlocksOfType(batteries);
+            IMyTextPanel batteryPanel = GridTerminalSystem.GetBlockWithName(BatteryLcdPanelName) as IMyTextPanel;
 
-            //if (cockpit != null) // TODO: add OR condition checking PB input arguments for panel preference.
-            //{
-            //    for (var i = 0; i < cockpit.SurfaceCount; i++)
-            //    {
-            //        IMyTextSurface surface = cockpit.GetSurface(i);
-            //        surface.WriteText($"Surface #{i}");
-            //    }
-            //}
-            //else
-            //{
-                Echo("No cockpit available.");
 
-                var panels = new List<IMyTextPanel>();
-                GridTerminalSystem.GetBlocksOfType(panels);
+            StatusDisplayUtilityClass DisplayUtilityClass = new StatusDisplayUtilityClass();
+            
+            if (HydrogenLcdPanelName != null) 
+            {
+                DisplayUtilityClass.ShowHydrogen(HydrogenLcdPanelName);
+            } else 
+            {
+                Echo($"Unable to locate suitably named Hydrogen LCD: {HydrogenLcdPanelName}");
+            }
 
-                if (panels.Count > 0)
+            if (batteryPanel != null) 
+            {
+                if (batteries.Count > 0) 
                 {
-                    var batteryStatusDisplayScreen = new BatteryStatusDisplay(panels[0]);
-                    batteryStatusDisplayScreen.DisplayBatteryStatusInfo(batteries);
-
+                    DisplayUtilityClass.BatteryStatusDisplay(batteryPanel, batteries);
+                } else
+                {
+                    Echo($"No batteries available for display: {batteries}");
                 }
-            //}
-        }
-
-       
-
-
-       
+            } else 
+            {
+                Echo($"No such battery panel: {batteryPanel}");
+            }
+        }     
     }
 }
