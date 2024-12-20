@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netframework48</TargetFramework>
     <RootNamespace>IngameScript</RootNamespace>
@@ -24,4 +24,6 @@
     <AdditionalFiles Include="Instructions.readme" />
     <AdditionalFiles Include="thumb.png" />
   </ItemGroup>
+  <Import Project="..\Mdk.PbHydrogenStatusMixin\Mdk.PbHydrogenStatusMixin.projitems" Label="Shared" />
+  <Import Project="..\Mdk.PbBatteryDisplayMixin\Mdk.PbBatteryDisplayMixin.projitems" Label="Shared" />
 </Project>
