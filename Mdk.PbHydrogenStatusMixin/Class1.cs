@@ -15,6 +15,22 @@ namespace IngameScript
             _program = program;
         }
 
+        public static string PercentageBar(double upTo)
+        {
+            string percentageVisual = "[";
+            for (var i=0; i <= 100; i++)
+            {
+                switch (i <= upTo)
+                {
+                    case true: { percentageVisual += "|"; }; break;
+                    case false: { percentageVisual += " "; }; break;
+                }
+            }
+            percentageVisual += "]";
+
+            return percentageVisual;
+        }
+
         public void ShowHydrogen(IMyTextPanel lcd, List<IMyGasTank> hydrogenTanks, List<IMyTerminalBlock> inventories)
         {
             if (lcd == null)
@@ -59,6 +75,7 @@ namespace IngameScript
             }
 
             string output = $"Hydrogen Stores: {hydrogenPercentage:F1}%\nRemaining Ice: {totalIce:N0}";
+            string percBar = PercentageBar(hydrogenPercentage);
             lcd.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
             lcd.WriteText(output);
 
