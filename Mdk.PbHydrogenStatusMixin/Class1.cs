@@ -18,9 +18,9 @@ namespace IngameScript
         public static string PercentageBar(double upTo)
         {
             string percentageVisual = "[";
-            for (var i=0; i <= 100; i++)
+            for (var i=0; i < 40; i++)
             {
-                switch (i <= upTo)
+                switch (i <= (upTo/100) * 40)
                 {
                     case true: { percentageVisual += "|"; }; break;
                     case false: { percentageVisual += " "; }; break;
@@ -74,8 +74,8 @@ namespace IngameScript
                 }
             }
 
-            string output = $"Hydrogen Stores: {hydrogenPercentage:F1}%\nRemaining Ice: {totalIce:N0}";
             string percBar = PercentageBar(hydrogenPercentage);
+            string output = $"Hydrogen Stores: {hydrogenPercentage:F1}%\nRemaining Ice: {totalIce:N0}\n{percBar}";
             lcd.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
             lcd.WriteText(output);
 
@@ -95,8 +95,8 @@ namespace IngameScript
                 float charge = battery.CurrentStoredPower;
                 float maxCharge = battery.MaxStoredPower;
                 float chargePercentage = (maxCharge > 0) ? (charge / maxCharge) * 100f : 0f;
-
-                output.AppendLine($"{name} :: {charge:F2} / {maxCharge:F2} MWh :: {chargePercentage:F0}%");
+                string batteryPercBar = PercentageBar(chargePercentage);
+                output.AppendLine($"{name} :: {charge:F2} / {maxCharge:F2} MWh :: {chargePercentage:F0}%\n{batteryPercBar}");
             }
 
             screen.WriteText(output.ToString());
