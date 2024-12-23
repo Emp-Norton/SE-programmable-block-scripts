@@ -20,7 +20,13 @@ using VRageMath;
 
 namespace IngameScript
 {
-    internal class UtilityClass
+    public class EnemyDetectionUtility
     {
+        private readonly MyGridProgram _program;
+
+        public EnemyDetectionUtility(MyGridProgram program)
+        {
+            _program = program;
+        }
     }
 }
