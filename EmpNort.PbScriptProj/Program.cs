@@ -23,11 +23,15 @@ namespace IngameScript
     public class Program : MyGridProgram
     {
         private readonly StatusDisplayUtility _utility;
+        private EnemyDetectionUtility _enemyDetection;
+
 
         public Program()
         {
             // Pass the current instance to the utility
             _utility = new StatusDisplayUtility(this);
+            _enemyDetection = new EnemyDetectionUtility(this);
+            Runtime.UpdateFrequency = UpdateFrequency.Update100;
         }
 
         public void Save()
@@ -66,6 +70,21 @@ namespace IngameScript
             {
                 Echo($"No batteries or battery panel available.");
             }
+
+
+            var lcd = GridTerminalSystem.GetBlockWithName("enemies") as IMyTextPanel;
+            var antennas = new List<IMyRadioAntenna>();
+            GridTerminalSystem.GetBlocksOfType(antennas, a => a.IsFunctional);
+
+            // Get the light group (optional, used to set light color)
+            var lightGroup = GridTerminalSystem.GetBlockGroupWithName("Ship Lights");
+
+            // Call the enemy detection utility
+            _enemyDetection.DetectEnemiesFromAntennae(lcd, antennas, lightGroup);
+
+
+
+
         }
     }
 
