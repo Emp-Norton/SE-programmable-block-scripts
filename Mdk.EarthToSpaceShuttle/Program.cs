@@ -53,7 +53,7 @@ namespace IngameScript
         }
         void Main(string argument, UpdateType updateSource)
         {
-            // Get the flight seat
+            // Get the controller
             var flightSeat = GridTerminalSystem.GetBlockWithName("Flight Seat") as IMyCockpit;
             if (flightSeat == null)
             {
@@ -61,19 +61,22 @@ namespace IngameScript
                 return;
             }
 
-            // Access the single LCD panel
+            // Access the requisite panels
             IMyTextSurface panel = flightSeat.GetSurface(0);
             IMyTextSurface lcd_left = GridTerminalSystem.GetBlockWithName("lcd_left_pitch") as IMyTextSurface;
             IMyTextSurface lcd_right = GridTerminalSystem.GetBlockWithName("lcd_right_roll") as IMyTextSurface;
-            double altitude;
+
             // Get altitude, gravity, pitch, and roll
+            double altitude;
             Vector3D gravity = flightSeat.GetNaturalGravity();
-            double gravityMagnitude = gravity.Length(); // Gravity in m/s²
+            double gravityMagnitude = gravity.Length(); 
             flightSeat.TryGetPlanetElevation(MyPlanetElevation.Surface, out altitude);
             Color color = Color.White;
-            Vector3D shipUp = flightSeat.WorldMatrix.Up; // "Up" direction of the ship
+            Vector3D shipUp = flightSeat.WorldMatrix.Up; 
             double pitch = Math.Asin(Vector3D.Dot(Vector3D.Cross(shipUp, gravity), flightSeat.WorldMatrix.Right)) * (180 / Math.PI);
             double roll = Math.Asin(Vector3D.Dot(Vector3D.Cross(shipUp, gravity), flightSeat.WorldMatrix.Forward)) * (180 / Math.PI);
+
+            // Set color as needed
             if (pitch > 1 || pitch < -1)
             {
                 color = Color.Red;
@@ -83,6 +86,7 @@ namespace IngameScript
                 color = Color.Red;
             }
             ConfigurePanel(panel, color);
+
             // Write data to the LCD panel
             string altitudeText = $"Altitude: {altitude:F1} m";
             string gravityText = $"Gravity: {gravityMagnitude:F2} m/s²";
