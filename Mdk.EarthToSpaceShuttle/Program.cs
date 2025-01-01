@@ -43,6 +43,10 @@ namespace IngameScript
             // needed.
         }
 
+
+        Vector3D targetPosition = Vector3D.Zero;
+
+
         public Program()
         {
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
@@ -113,28 +117,32 @@ namespace IngameScript
         {
             float rotationAngle = 0;
             if (roll < -1) rotationAngle = 0;
-            if (roll > 1) rotationAngle = 180;
+            if (roll > 1) rotationAngle = 195;
+            float normalizedRotationAngle = rotationAngle * (float)Math.PI / 180f; // Degrees to radians
+
             Color arrowColor = roll < -15 || roll > 15 ? Color.Green : Color.Red;
 
             Vector2 position = panel.SurfaceSize / 2; // Center the arrow
             Vector2 size = new Vector2(400, 400); // Adjust arrow size
 
-            DrawRotatedArrow(panel, "AH_BoreSight", position, size, arrowColor, rotationAngle);
+            DrawRotatedArrow(panel, "AH_BoreSight", position, size, arrowColor, normalizedRotationAngle);
         }
         void DrawPitchArrow(IMyTextSurface panel, double pitch)
         {
             float rotationAngle = 0;
             if (pitch < -15) rotationAngle = 0;
-            if (pitch > 15) rotationAngle = 270;
+            if (pitch > 15) rotationAngle = 180;
+            float normalizedRotationAngle = rotationAngle * (float)Math.PI / 180f; // Degrees to radians
+
             Color arrowColor = pitch < 0 ? Color.Green : Color.Red;
 
             Vector2 position = panel.SurfaceSize / 2; // Center the arrow
             Vector2 size = new Vector2(400, 400); // Adjust arrow size
 
-            DrawRotatedArrow(panel, "Arrow", position, size, arrowColor, rotationAngle);
+            DrawRotatedArrow(panel, "Arrow", position, size, arrowColor, normalizedRotationAngle);
         }
 
-        void DrawRotatedArrow(IMyTextSurface panel, string spriteName, Vector2 position, Vector2 size, Color color, float rotationAngle)
+        void DrawRotatedArrow(IMyTextSurface panel, string spriteName, Vector2 position, Vector2 size, Color color, float normalizedRotationAngle)
         {
             using (var frame = panel.DrawFrame())
             {
@@ -144,7 +152,7 @@ namespace IngameScript
                     position: position,        // Sprite position
                     size: size,                // Sprite size
                     color: color,              // Sprite color
-                    rotation: rotationAngle, // Rotation in degrees (float)
+                    rotation: normalizedRotationAngle, // Rotation in degrees (float)
                     alignment: TextAlignment.CENTER // Alignment
 
                 );
