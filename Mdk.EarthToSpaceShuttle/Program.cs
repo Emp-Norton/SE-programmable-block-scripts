@@ -85,6 +85,10 @@ namespace IngameScript
                 color = Color.Red;
             }
 
+            List<IMyThrust> thrusters = new List<IMyThrust>();
+            GridTerminalSystem.GetBlocksOfType(thrusters);
+
+            FireThrusterInDirection(thrusters, pitch, roll, flightSeat);
             DrawPitchArrow(lcd_left, pitch);
             DrawRollArrow(lcd_right, roll);
             ConfigurePanel(panel, color);
@@ -159,6 +163,57 @@ namespace IngameScript
 
                 frame.Add(arrow);
             }
+        }
+
+        void FireThrusterInDirection(List<IMyThrust> thrusters, double pitch, double roll, IMyCockpit cockpit) 
+        {
+            double dimension = Math.Abs(pitch);
+            float magnitude = 0f;
+
+            Echo($"Processing :: Pitch :: {dimension}");
+            if (dimension >= 2) magnitude = 0.5f;
+            if (dimension >= 5) magnitude = 1.5f;
+            if (dimension >= 10) magnitude = 5.0f;
+
+            foreach (var thruster in thrusters)
+            {
+                if (pitch > 1 && thruster.WorldMatrix.Down == cockpit.WorldMatrix.Down)
+                {
+                    Echo($"Firing: {thruster.WorldMatrix.Down} :: Pitch {pitch} :: {magnitude}");
+                    thruster.ThrustOverridePercentage = magnitude;
+                }
+                if (pitch < -1 && thruster.WorldMatrix.Up == cockpit.WorldMatrix.Up)
+                {
+                    Echo($"Firing: {thruster.WorldMatrix.Up} :: Pitch {pitch} :: {magnitude}");
+                    thruster.ThrustOverridePercentage = magnitude;
+                }
+    
+            }
+
+
+            dimension = Math.Abs(roll);
+            magnitude = 0f;
+
+            Echo($"Processing :: Roll :: {dimension}");
+            if (dimension >= 2) magnitude = 0.5f;
+            if (dimension >= 5) magnitude = 1.5f;
+            if (dimension >= 10) magnitude = 5.0f;
+
+            foreach (var thruster in thrusters)
+            {
+                if (roll > 1 && thruster.WorldMatrix.Left == cockpit.WorldMatrix.Left)
+                {
+                    Echo($"Firing: {thruster.WorldMatrix.Left} :: Roll {roll} :: {magnitude}");
+                    thruster.ThrustOverridePercentage = magnitude;
+                }
+                if (roll < -1 && thruster.WorldMatrix.Right == cockpit.WorldMatrix.Right)
+                {
+                    Echo($"Firing: {thruster.WorldMatrix.Up} :: Roll {roll} :: {magnitude}");
+                    thruster.ThrustOverridePercentage = magnitude;
+                }
+            }
+            
+            
         }
 
     }
