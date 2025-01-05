@@ -39,14 +39,22 @@ namespace IngameScript
             // Optional save logic
         }
 
+        public bool IsLocal(IMyCubeBlock block) 
+        {
+            return block.CubeGrid.EntityId == Me.CubeGrid.EntityId;
+        }
+
         public void Main(string argument, UpdateType updateSource)
         {
             var onlyGridOwned = argument.Contains("onlyGridOwned");
+
+            string gasPanelName = "gasStatusLcd";
+            string batteryPanelName = "batteryStatusLcd";
             
             // Finder: Create battery list and LCD ref
             var batteries = new List<IMyBatteryBlock>();
             GridTerminalSystem.GetBlocksOfType(batteries);
-            IMyTextPanel batteryPanel = GridTerminalSystem.GetBlockWithName("batteryLcd") as IMyTextPanel;
+            IMyTextPanel batteryPanel = GridTerminalSystem.GetBlockWithName(batteryPanelName) as IMyTextPanel;
 
             // Finder: Create hydrogen list and filter
             List<IMyGasTank> hydrogenTanks = new List<IMyGasTank>();
@@ -57,7 +65,7 @@ namespace IngameScript
             GridTerminalSystem.GetBlocksOfType(oxygenTanks, tank => tank.DetailedInfo.Contains("Oxygen") && (onlyGridOwned ? tank.CubeGrid.EntityId == Me.CubeGrid.EntityId : true));
 
             // Finder: Create gas status LCD ref
-            IMyTextPanel gasStatusPanel = GridTerminalSystem.GetBlockWithName("hydroLcd") as IMyTextPanel;
+            IMyTextPanel gasStatusPanel = GridTerminalSystem.GetBlockWithName(gasPanelName) as IMyTextPanel;
 
             // Finder: Get Inventories
             List<IMyTerminalBlock> inventories = new List<IMyTerminalBlock>();
@@ -124,11 +132,11 @@ namespace IngameScript
             // Set LCD color based on ammo status
             if (turretUtility.IsAnyTurretEmpty())
             {
-                turretLcd.FontColor = Color.Red;
+                turretLcd.FontColor =  VRageMath.Color.Red;
             }
             else
             {
-                turretLcd.FontColor = Color.White;
+                turretLcd.FontColor = VRageMath.Color.White;
             }
 
             Echo("Turret ammo status updated.");
