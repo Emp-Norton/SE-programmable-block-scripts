@@ -46,14 +46,28 @@ namespace IngameScript
 
         Vector3D targetPosition = Vector3D.Zero;
 
-
         public Program()
         {
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
 
+
         }
         void Main(string argument, UpdateType updateSource)
         {
+
+
+            string pitchLcd = "lcd_left";
+            string rollLcd = "lcd_right";
+            string logLcd = "lcd_wide";
+            string midLcd = "lcd_mid";
+            IMyTextSurface lcd_mid = GridTerminalSystem.GetBlockWithName(midLcd) as IMyTextSurface;
+            IMyTextSurface lcd_left = GridTerminalSystem.GetBlockWithName(rollLcd) as IMyTextSurface;
+            IMyTextSurface lcd_right = GridTerminalSystem.GetBlockWithName(pitchLcd) as IMyTextSurface;
+            IMyTextSurface lcd_wide = GridTerminalSystem.GetBlockWithName(logLcd) as IMyTextSurface;
+
+
+
+
             // Get the flight seat
             var flightSeat = GridTerminalSystem.GetBlockWithName("Flight Seat") as IMyCockpit;
             if (flightSeat == null)
@@ -64,9 +78,9 @@ namespace IngameScript
 
             // Access the single LCD panel
             IMyTextSurface panel = flightSeat.GetSurface(0);
-            IMyTextSurface lcd_left = GridTerminalSystem.GetBlockWithName("lcd_left") as IMyTextSurface;
-            IMyTextSurface lcd_right = GridTerminalSystem.GetBlockWithName("lcd_right") as IMyTextSurface;
+
             double altitude;
+
             // Get altitude, gravity, pitch, and roll
             Vector3D gravity = flightSeat.GetNaturalGravity();
             double gravityMagnitude = gravity.Length(); // Gravity in m/s²
@@ -88,10 +102,22 @@ namespace IngameScript
             List<IMyThrust> thrusters = new List<IMyThrust>();
             GridTerminalSystem.GetBlocksOfType(thrusters);
 
-            FireThrusterInDirection(thrusters, pitch, roll, flightSeat);
+            FireThrusterInDirection(thrusters, pitch, roll, flightSeat, lcd_wide);
             DrawPitchArrow(lcd_left, pitch);
             DrawRollArrow(lcd_right, roll);
-            ConfigurePanel(panel, color);
+            ConfigurePanel(panel, color, 4.0f);
+            //ConfigurePanel(lcd_mid, Color.White, 1.4f);
+
+            // Mid-panel placeholder 
+            string midpanel = "test";
+            foreach (var thruster in thrusters)
+            {
+                Vector3 direction = thruster.GridThrustDirection;
+                float curPur = thruster.CurrentThrustPercentage;
+                midpanel += $"{thruster:F2}\n :: {direction:F2} :: {curPur:F2}\n";
+                lcd_mid.WriteText(midpanel);
+            }
+
 
             // Write data to the LCD panel
             string altitudeText = $"Altitude: {altitude:F1} m";
@@ -102,15 +128,16 @@ namespace IngameScript
 
             // Debug information
             Echo("Altitude, Gravity, and Pitch/Roll written to panel.");
+
         }
 
-        void ConfigurePanel(IMyTextSurface panel, Color color)
+        void ConfigurePanel(IMyTextSurface panel, Color color, float fontsize)
         {
             if (panel == null) return;
 
             // Set up text formatting
             panel.ContentType = ContentType.TEXT_AND_IMAGE; // Ensure text mode
-            panel.FontSize = 4.0f;                          // Adjust font size
+            panel.FontSize = fontsize;                          // Adjust font size
             panel.Alignment = TextAlignment.CENTER;           // Left-align text
             panel.FontColor = color;                  // Text color
             panel.BackgroundColor = Color.Black;            // Background color
@@ -150,7 +177,7 @@ namespace IngameScript
         {
             using (var frame = panel.DrawFrame())
             {
-                MySprite arrow = new MySprite(
+                  MySprite arrow = new MySprite(
                     type: SpriteType.TEXTURE,  // Explicitly setting SpriteType
                     data: spriteName,          // Texture name
                     position: position,        // Sprite position
@@ -165,56 +192,57 @@ namespace IngameScript
             }
         }
 
-        void FireThrusterInDirection(List<IMyThrust> thrusters, double pitch, double roll, IMyCockpit cockpit) 
+        void FireThrusterInDirection(List<IMyThrust> thrusters, double pitch, double roll, IMyCockpit cockpit, IMyTextSurface lcd_wide)
         {
             double dimension = Math.Abs(pitch);
             float magnitude = 0f;
 
-            Echo($"Processing :: Pitch :: {dimension}");
-            if (dimension >= 2) magnitude = 0.5f;
-            if (dimension >= 5) magnitude = 1.5f;
-            if (dimension >= 10) magnitude = 5.0f;
+            lcd_wide.WriteText($"Processing :: Pitch :: {dimension}");
+            if (dimension >= 2) magnitude = 0.1f;
+            if (dimension >= 5) magnitude = 0.4f;
+            if (dimension >= 10) magnitude = 0.7f;
 
             foreach (var thruster in thrusters)
             {
                 if (pitch > 1 && thruster.WorldMatrix.Down == cockpit.WorldMatrix.Down)
                 {
-                    Echo($"Firing: {thruster.WorldMatrix.Down} :: Pitch {pitch} :: {magnitude}");
+                    lcd_wide.WriteText($"Firing: {thruster.WorldMatrix.Down} :: Pitch {pitch:F2} :: {magnitude}");
                     thruster.ThrustOverridePercentage = magnitude;
                 }
                 if (pitch < -1 && thruster.WorldMatrix.Up == cockpit.WorldMatrix.Up)
                 {
-                    Echo($"Firing: {thruster.WorldMatrix.Up} :: Pitch {pitch} :: {magnitude}");
+                    lcd_wide.WriteText($"Firing: {thruster.WorldMatrix.Up} :: Pitch {pitch:F2} :: {magnitude}");
                     thruster.ThrustOverridePercentage = magnitude;
                 }
-    
+
             }
 
 
             dimension = Math.Abs(roll);
             magnitude = 0f;
 
-            Echo($"Processing :: Roll :: {dimension}");
-            if (dimension >= 2) magnitude = 0.5f;
-            if (dimension >= 5) magnitude = 1.5f;
-            if (dimension >= 10) magnitude = 5.0f;
+            lcd_wide.WriteText($"Processing :: Roll :: {dimension:F2}");
+            if (dimension >= 2) magnitude = 0.1f;
+            if (dimension >= 5) magnitude = 0.4f;
+            if (dimension >= 10) magnitude = 0.7f;
 
             foreach (var thruster in thrusters)
             {
                 if (roll > 1 && thruster.WorldMatrix.Left == cockpit.WorldMatrix.Left)
                 {
-                    Echo($"Firing: {thruster.WorldMatrix.Left} :: Roll {roll} :: {magnitude}");
+                    lcd_wide.WriteText($"Firing: {thruster.WorldMatrix.Left} :: Roll {roll:F2} :: {magnitude}");
                     thruster.ThrustOverridePercentage = magnitude;
                 }
                 if (roll < -1 && thruster.WorldMatrix.Right == cockpit.WorldMatrix.Right)
                 {
-                    Echo($"Firing: {thruster.WorldMatrix.Up} :: Roll {roll} :: {magnitude}");
+                    lcd_wide.WriteText($"Firing: {thruster.WorldMatrix.Up} :: Roll {roll:F2} :: {magnitude}");
                     thruster.ThrustOverridePercentage = magnitude;
                 }
             }
-            
-            
+
+
         }
+
 
     }
 }
