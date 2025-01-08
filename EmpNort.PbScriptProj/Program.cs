@@ -48,8 +48,17 @@ namespace IngameScript
         {
             var onlyGridOwned = argument.Contains("onlyGridOwned");
 
+            var args = argument.Split(',');
+            Echo($"Args: {args}");
+
             string gasPanelName = "gasStatusLcd";
             string batteryPanelName = "batteryStatusLcd";
+            string turretPanelName = "turretStatusLcd";
+            string inventoryPanelName = "inventoryStatusLcd";
+            string raycastPanelName = "raycastStatusLcd";
+            string enemyPanelName = "enemyStatusLcd";
+
+            string enemyAlertLightsName = "enemyAlertLights";
             
             // Finder: Create battery list and LCD ref
             var batteries = new List<IMyBatteryBlock>();
@@ -99,7 +108,7 @@ namespace IngameScript
             }
 
 
-            var lcd = GridTerminalSystem.GetBlockWithName("enemies") as IMyTextPanel;
+            var lcd = GridTerminalSystem.GetBlockWithName(enemyPanelName) as IMyTextPanel;
             var antennas = new List<IMyRadioAntenna>();
             GridTerminalSystem.GetBlocksOfType(antennas, a => a.IsFunctional);
 
