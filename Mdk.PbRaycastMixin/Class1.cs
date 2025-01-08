@@ -25,7 +25,7 @@ namespace IngameScript
     {
         public RaycastUtility() 
         {
-            void SetupCast(double range, IMyCameraBlock camera, IMyTextPanel lcd)
+            void SetupCast(IMyCameraBlock camera, double scanRange, IMyTextPanel lcd)
             {
                 
                 Echo($"Range: {camera.AvailableScanRange.ToString()}");
