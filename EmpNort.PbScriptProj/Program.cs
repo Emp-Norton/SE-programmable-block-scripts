@@ -118,13 +118,12 @@ namespace IngameScript
             // Call the enemy detection utility
             _enemyDetection.DetectEnemiesFromAntennae(lcd, antennas, lightGroup);
 
-            string lcdName = "turretsLcd";
 
             // Get the LCD panel
-            IMyTextPanel turretLcd = GridTerminalSystem.GetBlockWithName(lcdName) as IMyTextPanel;
+            IMyTextPanel turretLcd = GridTerminalSystem.GetBlockWithName(turretPanelName) as IMyTextPanel;
             if (lcd == null)
             {
-                Echo($"Error: LCD panel '{lcdName}' not found.");
+                Echo($"Error: LCD panel '{turretLcd}' not found.");
                 return;
             }
 
