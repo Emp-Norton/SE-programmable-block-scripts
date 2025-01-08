@@ -82,7 +82,7 @@ namespace IngameScript
             {
                 lcd.FontColor = VRageMath.Color.Red;
             }
-            lcd.WriteText(output, true);
+            lcd.WriteText(output);
 
             _program.Echo("Hydrogen status displayed successfully.");
             _program.Echo(output);
