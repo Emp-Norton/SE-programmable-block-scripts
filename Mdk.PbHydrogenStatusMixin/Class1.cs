@@ -3,6 +3,7 @@ using System.Text;
 using System;
 using VRage.Game.ModAPI.Ingame;
 using Sandbox.ModAPI.Ingame;
+using System.Drawing;
 
 namespace IngameScript
 {
@@ -75,12 +76,61 @@ namespace IngameScript
             }
 
             string percBar = PercentageBar(hydrogenPercentage);
-            string output = $"Hydrogen Stores: {hydrogenPercentage:F1}%\nRemaining Ice: {totalIce:N0}\n{percBar}";
+            string output = $"Hydrogen Stores: {hydrogenPercentage:F1}%\nRemaining Ice: {totalIce:N0}\n{percBar}\n\n";
             lcd.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
-            lcd.WriteText(output);
+            if (totalIce < 50000 || hydrogenPercentage < 50)
+            {
+                lcd.FontColor = VRageMath.Color.Red;
+            }
+            lcd.WriteText(output, true);
 
             _program.Echo("Hydrogen status displayed successfully.");
             _program.Echo(output);
+        }
+
+        public void ShowOxygen(IMyTextPanel lcd, List<IMyGasTank> oxygenTanks, List<IMyTerminalBlock> inventories) 
+        { 
+
+            double totalOxygen = 0;
+            double totalCapacity = 0;
+            foreach (var tank in oxygenTanks)
+            {
+                totalOxygen += tank.FilledRatio * tank.Capacity;
+                totalCapacity += tank.Capacity;
+            }
+
+            double oxygenPercentage = (totalCapacity > 0) ? (totalOxygen / totalCapacity) * 100 : 0;
+
+            MyItemType iceType = MyItemType.MakeOre("Ice");
+            double totalIce = 0;
+
+            foreach (var block in inventories)
+            {
+                var inventory = block.GetInventory();
+                var items = new List<MyInventoryItem>();
+                inventory.GetItems(items);
+
+                foreach (var item in items)
+                {
+                    if (item.Type == iceType)
+                    {
+                        totalIce += (double)item.Amount;
+                    }
+                }
+            }
+
+            string percBar = PercentageBar(oxygenPercentage);
+            string output = $"Oxygen Stores: {oxygenPercentage:F1}%\nRemaining Ice: {totalIce:N0}\n{percBar}\n\n";
+            lcd.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
+            if (totalIce < 50000 || oxygenPercentage < 50)
+            {
+                lcd.FontColor = VRageMath.Color.Red;
+            }
+            lcd.WriteText(output, true);
+
+            _program.Echo("Oxygen status displayed successfully.");
+            _program.Echo(output);
+
         }
 
         public void BatteryStatusDisplay(IMyTextPanel screen, List<IMyBatteryBlock> batteries)
@@ -103,4 +153,67 @@ namespace IngameScript
             _program.Echo("Battery status displayed successfully.");
         }
     }
+
+    public class TurretStatusUtility
+    {
+        private IMyGridTerminalSystem GridTerminalSystem;
+        private StringBuilder _output;
+        private bool _anyTurretEmpty;
+
+        public TurretStatusUtility(IMyGridTerminalSystem gridTerminalSystem)
+        {
+            GridTerminalSystem = gridTerminalSystem;
+            _output = new StringBuilder();
+            _anyTurretEmpty = false;
+        }
+
+        public string GetTurretStatus()
+        {
+            _output.Clear();
+            _anyTurretEmpty = false;
+
+            // Find all turrets on the grid
+            List<IMyLargeTurretBase> turrets = new List<IMyLargeTurretBase>();
+            GridTerminalSystem.GetBlocksOfType(turrets);
+
+            // Process each turret
+            foreach (IMyLargeTurretBase turret in turrets)
+            {
+                // Get turret inventory
+                IMyInventory inventory = turret.GetInventory();
+                if (inventory == null) continue;
+
+                // Count ammo items
+                var items = new List<MyInventoryItem>();
+                inventory.GetItems(items);
+
+                int ammoCount = 0;
+                int totalCapacity = (int)inventory.MaxVolume;
+                string ammoType = "None";
+
+                foreach (var item in items)
+                {
+                    ammoCount += item.Amount.ToIntSafe();
+                    ammoType = item.Type.SubtypeId; // Get the ammo type of the first item
+                }
+
+                // Add turret information to the output
+                _output.AppendLine($"{turret.CustomName}: {ammoCount} / {totalCapacity} : {ammoType}");
+
+                // Check if the turret is out of ammo
+                if (ammoCount == 0)
+                {
+                    _anyTurretEmpty = true;
+                }
+            }
+
+            return _output.ToString();
+        }
+
+        public bool IsAnyTurretEmpty()
+        {
+            return _anyTurretEmpty;
+        }
+    }
+
 }
