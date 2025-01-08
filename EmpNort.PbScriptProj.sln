@@ -9,6 +9,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Mdk.PbResourceStatusMixin",
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Mdk.PbEnemyDetectionMixin", "Mdk.PbBatteryDisplayMixin\Mdk.PbEnemyDetectionMixin.shproj", "{5972B30B-81CD-4E19-8408-B824B60264DD}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Mdk.PbRaycastMixin", "Mdk.PbRaycastMixin\Mdk.PbRaycastMixin.shproj", "{09770026-3C72-4B72-A6E6-9E468AD2FCC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -24,6 +26,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Mdk.PbRaycastMixin\Mdk.PbRaycastMixin.projitems*{09770026-3c72-4b72-a6e6-9e468ad2fcc7}*SharedItemsImports = 13
 		Mdk.PbBatteryDisplayMixin\Mdk.PbBatteryDisplayMixin.projitems*{5972b30b-81cd-4e19-8408-b824b60264dd}*SharedItemsImports = 13
 		Mdk.PbHydrogenStatusMixin\Mdk.PbHydrogenStatusMixin.projitems*{8a3cdcc5-4b55-4d87-a415-698a0e1ff06f}*SharedItemsImports = 13
 		Mdk.PbBatteryDisplayMixin\Mdk.PbBatteryDisplayMixin.projitems*{a3d02b46-c02a-43f1-9a91-778f25fdac52}*SharedItemsImports = 5
