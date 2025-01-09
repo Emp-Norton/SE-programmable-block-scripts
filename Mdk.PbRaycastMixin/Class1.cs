@@ -25,15 +25,7 @@ namespace IngameScript
     {
         public RaycastUtility()
         {
-            Vector3D targetPosition;
-            bool targetReached = false;
-            const double STOPPING_DISTANCE = 100.0; // meters
-            const double MAX_SPEED = 100.0; // m/s
-            const double ACCELERATION = 10.0; // m/s²
-            const double PRECISION = 1.0; // meters
-            string raycastCameraName = "Raycast Camera"
-            string cockpitName = "RaycastCockpit";
-
+ 
             void RaycastToLcd(IMyCameraBlock camera, double scanRange, IMyTextPanel lcd)
             {
 
@@ -77,26 +69,33 @@ namespace IngameScript
 
 
 
-            void Main(string argument, UpdateType updateSource)
+            void RaycastAndDispatch(IMyCameraBlock raycastCamera, double scanRange, IMyCockpit cockpit, IMyRemoteControl remote)
             {
 
-                IMyCockpit cockpit = GridTerminalSystem.GetBlockWithName(cockpitName) as IMyCockpit;
+                Vector3D targetPosition;
+                bool targetReached = false;
+                const double STOPPING_DISTANCE = 100.0; // meters
+                const double MAX_SPEED = 100.0; // m/s
+                const double ACCELERATION = 10.0; // m/s²
+                const double PRECISION = 1.0; // meters
+
                 IMyTextSurface lcd = cockpit.GetSurface(0);
                 IMyTextSurface parsedPanel = cockpit.GetSurface(1);
 
 
                 // Get the camera and LCD panel
-                IMyCameraBlock camera = GridTerminalSystem.GetBlockWithName(raycastCameraName) as IMyCameraBlock;
 
-                GetRaycastInfo(camera, 100000, lcd);
+
+                GetRaycastInfo(camera, scanRange, lcd);
                 if (targetPosition != null && targetPosition != new Vector3D(0, 0, 0))
                 {
-                    GoThere();
+                    GoThere(cockpit, remote);
                 }
 
                 // Echo for in-game programmable block status
                 Echo("Camera scan complete.");
             }
+
             void GetRaycastInfo(IMyCameraBlock camera, double scanRange, IMyTextSurface lcd)
             {
 
@@ -136,11 +135,9 @@ namespace IngameScript
                 }
             }
 
-            void GoThere()
+            void GoThere(IMyShipController controller, IMyRemoteControl remote)
             {
                 // Get required blocks
-                IMyRemoteControl remote = GridTerminalSystem.GetBlockWithName("Remote Control 2") as IMyRemoteControl;
-                IMyShipController controller = GridTerminalSystem.GetBlockWithName("cockpit") as IMyShipController;
 
                 if (remote == null || controller == null)
                 {
