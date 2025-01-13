@@ -197,3 +197,99 @@ namespace IngameScript
         }
     }
 }
+
+public Program()
+{
+    //    Runtime.UpdateFrequency = UpdateFrequency.Update100;
+}
+
+/*
+Vector3D GetDirectionVector(float distance, int pitch, int yaw)
+{
+    double pitchRad = MathHelper.ToRadians(pitch);
+    double yawRad = MathHelper.ToRadians(yaw);
+
+    double x = distance * Math.Cos(pitchRad) * Math.Cos(yawRad);
+    double y = distance * Math.Sin(pitchRad);
+    double z = distance * Math.Cos(pitchRad) * Math.Sin(yawRad);
+
+    return new Vector3D(x, y, z);
+}
+*/
+
+
+IMyCameraBlock camera;
+IMyTextPanel logger;
+IMyTextPanel outputLcd;
+IMyButtonPanel button;
+IMyTextPanel updaterLcd;
+
+public void Main(string argument, UpdateType updateSource)
+{
+
+    string scanBreak = "------------------------------------------------";
+    string cameraName = "raycam";
+    string loggerLcdName = "loggerLcd";
+    string outputLcdName = "outputLcd";
+    string fireButtonName = "fireButton";
+
+    if (camera == null)
+    {
+        camera = GridTerminalSystem.GetBlockWithName(cameraName) as IMyCameraBlock;
+    }
+    if (logger == null) { logger = GridTerminalSystem.GetBlockWithName(loggerLcdName) as IMyTextPanel; }
+    if (outputLcdName == null) { outputLcd = GridTerminalSystem.GetBlockWithName(outputLcdName) as IMyTextPanel; }
+
+
+    camera.EnableRaycast = true;
+    double targetDist = 10000;
+    int maxAngle = 45;
+    int pitch = 0;
+    int yaw = 0;
+    if (camera != null)
+    {
+        string log = "";
+
+
+
+        for (var pitcha = 0; pitcha < 45; pitcha++)
+        {
+            for (var yawa = 0; yawa < 45; yawa++)
+            {
+
+                log += $"Trying to scan now @ {targetDist} - P {pitcha} - Y {yawa}\n";
+                log += $"{scanBreak}\n Scanning: {targetDist}m of {camera.AvailableScanRange}m @ {camera.RaycastTimeMultiplier / 1000}s / m\n {scanBreak} \n";
+           
+                logger.WriteText(log, true);
+
+                if (camera.AvailableScanRange >= targetDist)
+                {
+    
+                    MyDetectedEntityInfo target = camera.Raycast(targetDist, pitch = pitcha, yaw = yawa);
+
+                    // Prepare display text
+                    string output = "";
+                    if (!target.IsEmpty())
+                    {
+                        output = $"Camera Output\n\n" +
+                                 $"Entity Detected:\n" +
+                                 $"- Name: {target.Name}\n" +
+                                 $"- Type: {target.Type}\n" +
+                                 $"- Distance: {Vector3D.Distance(camera.GetPosition(), target.Position):F1} m\n" +
+                                 $"- Position: {target.Position}\n\n" +
+                                 $"- {target.ToString()}";
+
+
+                    }
+                    outputLcd.WriteText(output);
+                }
+                else
+                {
+                    Echo("No cam");
+                }
+            }
+        }
+    }
+
+
+}
